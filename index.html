@@ -1,19 +1,21 @@
 <html>
   <head>
-    <title>YAMATA SPIN</title>
+    <title>Yamata Spin Game</title>
 
-    <!-- <script src="vendor/multiplayer.umd.js"></script> -->
-    <script src="https://unpkg.com/playroomkit/multiplayer.umd.js"></script>
+    <script>
+      window._PLAYROOM_CONFIG = {sessionStorage: true};
+    </script>
+    <!-- <script type="text/javascript" src="https://unpkg.com/three.js@0.77.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/nipplejs@0.10.1/dist/nipplejs.js"></script>
+    <script src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/playroomkit/multiplayer.umd.js"></script> -->
 
     <script src="vendor/babylon.js"></script>
+
     <script src="game.js"></script>
 
     <link rel="stylesheet" type="text/css" href="styles.css">
-
-    <style>
-      
-
-    </style>
   </head>
 
   <body>
@@ -21,6 +23,9 @@
   </body>
   <script>
     window.addEventListener('DOMContentLoaded', function(){init();run()});
+    // window.addEventListener('load', netInit, false);
     window.addEventListener('resize', resize);
+    window.addEventListener('keydown', keyInput);
+    window.addEventListener('keyup', keyInput);
   </script>
 </html>
