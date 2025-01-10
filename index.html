@@ -11,7 +11,10 @@
     <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/playroomkit/multiplayer.umd.js"></script> -->
 
-    <script src="vendor/babylon.js"></script>
+    <script src="babylon.js"></script>
+    <script src="babylon.gui.js"></script>
+    <script src="babylon.glTFFileLoader.js"></script>
+
 
     <script src="game.js"></script>
 
@@ -24,6 +27,7 @@
   <script>
     window.addEventListener('DOMContentLoaded', function(){init();run()});
     // window.addEventListener('load', netInit, false);
+    window.addEventListener('load', load, false);
     window.addEventListener('resize', resize);
     window.addEventListener('keydown', keyInput);
     window.addEventListener('keyup', keyInput);
