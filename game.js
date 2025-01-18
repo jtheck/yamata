@@ -64,7 +64,7 @@ async function load(){
   sphere.setVerticesData(BABYLON.VertexBuffer.UVKind, null); // match properties accounts
   const sphereCSG = BABYLON.CSG2.FromMesh(sphere);
 
-  board = skullCSG.subtract(sphereCSG).toMesh("Trouble");
+  board = skullCSG.subtract(sphereCSG).toMesh("Board");
   board.position.x = 1;
   board.position.z = 0;
   let mat = new BABYLON.StandardMaterial(name, scene);
@@ -157,6 +157,14 @@ player = {
 }
 
 
+
+
+
+
+
+
+
+
 let triangle;
 function makeScene(){
   scene.autoClear = false; // Preserve background
@@ -189,7 +197,7 @@ function makeScene(){
   ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 42, height: 42}, scene);
   ground.position.y = -3;
 
-  let mat = new BABYLON.StandardMaterial("name", scene);
+  let mat = new BABYLON.StandardMaterial("matgrass", scene);
   let file = ASS+"grass.jpg";
   mat.emissiveTexture = new BABYLON.Texture(file, scene);
   mat.ambientTexture = new BABYLON.Texture(file, scene);
@@ -205,9 +213,7 @@ function makeScene(){
   triangle.position.y -= 2.5;
   triangle.position.z -= 4.7;
   triangle.setEnabled(false);
-  // triangle.position.x = -8;
-  // triangle.rotation.z -= .92;
-  triangleInv = BABYLON.MeshBuilder.CreateCylinder('tri', {diameter:3, tessellation:3, height:1}, scene);
+  triangleInv = BABYLON.MeshBuilder.CreateCylinder('tri-1', {diameter:3, tessellation:3, height:1}, scene);
   triangleInv.rotation.z = Math.PI*1.5;
   triangleInv.position.y += .75;
   triangleInv.position.z += 1.5;
@@ -215,81 +221,95 @@ function makeScene(){
   triangleInv.position.x = -11;
   triangleInv.position.y -= 2.5;
   triangleInv.position.z -= 4.7;
+  let mat2 = new BABYLON.StandardMaterial('12', scene);
+  mat2.specularColor = new BABYLON.Color3(1.07, 1.07, 0.07);
+  mat2.diffuseColor = new BABYLON.Color3(1.0, 1.1, 1.3);
+  triangle.material = mat;
+  triangleInv.material = mat2;
   triangleInv.setEnabled(false);
-  
-  // triangleInv.rotation.z -= .92;
-  log(triangle.position)
+  // log(triangle.position)
+
+
   faces = [];
-for (var f=0; f<5; f++){
-  face = [];
-  for (var i=0; i<4; i++){
-    var tri = triangle.createInstance();
-    tri.position.z += i*3;
-    // tri.position.y += j*3;
-    face.push(tri);
-    if (i!=3){
-      var tri = triangleInv.createInstance();
+  for (var f=0; f<5; f++){
+    face = [];
+    for (var i=0; i<4; i++){
+      var tri = triangle.createInstance();
       tri.position.z += i*3;
-      // tri.position.y += j*3;
+      tri.name = "tri";
       face.push(tri);
-
-    }
-
-    for(var j=-2; j<2; j++){
-      for (var k=-1; k<1; k++){
+      if (i!=3){
+        var tri = triangleInv.createInstance();
+        tri.position.z += i*3;
+        tri.name = "tri";
+        face.push(tri);
       }
     }
-  }
-  for (var i=0; i<3; i++){
-    var tri = triangle.createInstance();
-    tri.position.z += i*3+1.5;
-    tri.position.y += 2.4;
-    face.push(tri);
-    if (i!=2){
-      var tri = triangleInv.createInstance();
+    for (var i=0; i<3; i++){
+      var tri = triangle.createInstance();
       tri.position.z += i*3+1.5;
       tri.position.y += 2.4;
+      tri.name = "tri";
       face.push(tri);
+      if (i!=2){
+        var tri = triangleInv.createInstance();
+        tri.position.z += i*3+1.5;
+        tri.position.y += 2.4;
+        tri.name = "tri";
+        face.push(tri);
 
+      }
     }
-  }
-  for (var i=0; i<2; i++){
-    var tri = triangle.createInstance();
-    tri.position.z += i*3+3;
-    tri.position.y += 4.8;
-    face.push(tri);
-    if (i!=1){
-      var tri = triangleInv.createInstance();
+    for (var i=0; i<2; i++){
+      var tri = triangle.createInstance();
       tri.position.z += i*3+3;
       tri.position.y += 4.8;
-      // tri.bakeCurrentTransformIntoVertices();
-
+      tri.name = "tri";
       face.push(tri);
+      if (i!=1){
+        var tri = triangleInv.createInstance();
+        tri.position.z += i*3+3;
+        tri.position.y += 4.8;
+        tri.name = "tri";
 
+        face.push(tri);
+
+      }
     }
+
+    var tri = triangle.createInstance();
+    tri.position.z += 4.5;
+    tri.position.y += 7.2;
+    tri.isVisible = false;
+    tri.metadata = {shield:true};
+    tri.name = "triFinal";
+    face.push(tri);
+
+
+
+    let die = new BABYLON.TransformNode();
+    for (i=0; i<face.length; i++){
+      // log(face[i])
+      face[i].parent = die;
+    }
+    die.rotation.z-=.92;
+    die.position.y-=9.4;
+    // die.rotation.y+=((2*Math.PI)/5)*f;
+    // die.position.x += 9;
+    die.rotate(BABYLON.Vector3.Up(), ((2*Math.PI)/5)*f, BABYLON.Space.WORLD);
+
+
+
+    faces.push(die);
+    // let die2 = new BABYLON.TransformNode();
+    // for (i=0; i<die.children.length; i++){
   }
-  let die = new BABYLON.TransformNode();
-  for (i=0; i<face.length; i++){
-    // log(face[i])
-    face[i].parent = die;
-  }
-  die.rotation.z-=.92;
-  die.position.y-=9.4;
-  // die.rotation.y+=((2*Math.PI)/5)*f;
-  // die.position.x += 9;
-  die.rotate(BABYLON.Vector3.Up(), ((2*Math.PI)/5)*f, BABYLON.Space.WORLD);
 
 
 
-  faces.push(die);
-  // let die2 = new BABYLON.TransformNode();
-  // for (i=0; i<die.children.length; i++){
-}
+  boss = BABYLON.MeshBuilder.CreateSphere("boss", {diameter: 1.5, segments: 32}, scene);
 
-
-  boss = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1.5, segments: 32}, scene);
-
-  player.node = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: .5, segments: 32}, scene);
+  player.node = BABYLON.MeshBuilder.CreateSphere("player", {diameter: .5, segments: 32}, scene);
   player.node.setEnabled(false);
 
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"isopod.glb", scene).then(function (result) {
@@ -298,6 +318,7 @@ for (var f=0; f<5; f++){
     // log(rolley)
     player.node = null;
     player.node = rolley;
+    player.node.scaling = new Vec3(.35,.35,.35);
     player.node.position.y = -1;
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"frog.glb", scene).then(function (result) {
@@ -397,6 +418,7 @@ for (var f=0; f<5; f++){
   life.left = "-45%";
   life.onPointerClickObservable.add(() => {
       scene.activeCamera = camera;
+      camera.setTarget(Vec3.Zero());
       makeBoop('frog');
 
   });
@@ -416,6 +438,9 @@ function makeCamera(){
   camera2.setTarget(BABYLON.Vector3.Zero());
   camera2.attachControl(canvas, true);
   camera2.radius = 55;
+  // camera2.inputs.attached.mousewheel.wheelPrecisionY = .1;
+  camera2.wheelDeltaPercentage = 0.01;
+
 
   scene.activeCamera = camera2;
 }
@@ -460,18 +485,72 @@ function run(){
     render(frameAlpha, 1-frameAlpha)
   });
 }
+// 67 oct
+// 12 tri min
+// 57 motion
+// 61
+// 41
+// 43
+// 44
+
+let blobs = [];
+for (i=0; i<7; i++){
+  blobs.push()
+}
 
 
 
-
+let rayHelper = new BABYLON.RayHelper();
 function update(dt, t){
   // let x = Math.cos(x);
   // let z = Math.sin(z);
   procInput();
 
-
+  
   player.pb.integrate(1/dt);
+  
+  
+  
+  // let hitRay = new BABYLON.Ray(player.node.absolutePosition, camera.getForwardRay(), 99);
+  let hitRay = new BABYLON.Ray(player.node.absolutePosition, new Vec3(0,-2, 0).subtract(player.node.absolutePosition), 1);
+  rayHelper.dispose();
+  rayHelper = new BABYLON.RayHelper(hitRay);	
+  rayHelper.show(scene);		
+  // rayHelper.attachToMesh(player.node, localMeshDirection, localMeshOrigin, length);
+  
+  // var localMeshDirection = new BABYLON.Vector3(0, 0, 1);
+  // var localMeshOrigin = new BABYLON.Vector3(0, 0, .4);
+  // var length = 55;
+	
+// log(player.node.absolutePosition)
+  // log(player.node.position,camera.getForwardRay(), hitRay)
+  // log(scene.meshes)
+  let hit = hitRay.intersectsMeshes(scene.meshes);
+// log(hit)
+for (var i=0; i<hit.length; i++){
+  // log(hit[i].pickedMesh.name)
+  if (hit[i].pickedMesh.name == 'Board'){
+    break;
+  }
 
+  if (hit[i].pickedMesh.name == 'triFinal'){
+    // makeBoop('frog', .3);
+  }
+  if (hit[i].pickedMesh.name == 'tri' && hit[i].pickedMesh.isVisible){
+    hit[i].pickedMesh.isVisible = false;
+
+    boss.scaling= boss.scaling.scale(1.02);
+    boss.position.y += .02;
+
+  }
+}
+  // if (hit[0]){
+  //   // if (hit[0].pickedMesh.name == 'tri')
+
+  //   if (hit[0].pickedMesh.name == 'tri')
+  //   else
+  //   log(hit[0].pickedMesh.name)
+  // }
 }
 
 function render(a, b){
@@ -479,7 +558,7 @@ function render(a, b){
   // player.node.absolutePosition.x = 5*Math.cos(spin);
   // player.node.absolutePosition.z = 5*Math.sin(spin);
 
-  let pRad = 18;
+  let pRad = 24;
 
   player.node.position.x = pRad*Math.cos(spin);
   player.node.position.z = pRad*Math.sin(spin);
@@ -498,11 +577,11 @@ function render(a, b){
 
 
 
-  let cRad = pRad + 5;  
+  let cRad = pRad + 2;  
 
   camera.position.x = cRad*Math.cos(spin);
   camera.position.z = cRad*Math.sin(spin);
-  camera.position.y = player.node.position.y + 1 + Math.abs(player.node.position.y+1)*1.2
+  camera.position.y = player.node.position.y  + Math.abs(player.node.position.y+1)*1.2
   if (player.pb.vel !== 0) camera.setTarget(Vec3.Zero());
 
   scene.render();
@@ -635,8 +714,9 @@ makePyramid = function(obj, scene) {
 
 
 let volume = 1;
-makeBoop = function(name){
+makeBoop = function(name, speed){
   if (volume == 0) return;
+  if (!speed) speed = 1;
   if (!BABYLON.Engine.audioEngine.unlocked) return;
   
 
@@ -651,7 +731,9 @@ makeBoop = function(name){
     stackable: true,
     volume: 1
   };
-  tBoop.setVolume(volume);
+  
+  tBoop.setPlaybackRate(speed);
+  tBoop.setVolume(volume*.5);
   tBoop.play()
   // log(tBoop)
   
