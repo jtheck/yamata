@@ -163,7 +163,7 @@ player = {
 
 
 
-
+let mat;
 
 let triangle;
 function makeScene(){
@@ -197,7 +197,7 @@ function makeScene(){
   ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 42, height: 42}, scene);
   ground.position.y = -3;
 
-  let mat = new BABYLON.StandardMaterial("matgrass", scene);
+  mat = new BABYLON.StandardMaterial("matgrass", scene);
   let file = ASS+"grass.jpg";
   mat.emissiveTexture = new BABYLON.Texture(file, scene);
   mat.ambientTexture = new BABYLON.Texture(file, scene);
@@ -205,107 +205,8 @@ function makeScene(){
   mat.specularColor = new BABYLON.Color3(.1, .3, .1);
   ground.material = mat;
 
-  // pyramid.material
-  // log(pyramid)
-  triangle = BABYLON.MeshBuilder.CreateCylinder('tri', {diameter:3, tessellation:3, height:1}, scene);
-  triangle.rotation.z = Math.PI*.5;
-  triangle.position.x = -11;
-  triangle.position.y -= 2.5;
-  triangle.position.z -= 4.7;
-  triangle.setEnabled(false);
-  triangleInv = BABYLON.MeshBuilder.CreateCylinder('tri-1', {diameter:3, tessellation:3, height:1}, scene);
-  triangleInv.rotation.z = Math.PI*1.5;
-  triangleInv.position.y += .75;
-  triangleInv.position.z += 1.5;
-  triangleInv.bakeCurrentTransformIntoVertices();
-  triangleInv.position.x = -11;
-  triangleInv.position.y -= 2.5;
-  triangleInv.position.z -= 4.7;
-  let mat2 = new BABYLON.StandardMaterial('12', scene);
-  mat2.specularColor = new BABYLON.Color3(1.07, 1.07, 0.07);
-  mat2.diffuseColor = new BABYLON.Color3(1.0, 1.1, 1.3);
-  triangle.material = mat;
-  triangleInv.material = mat2;
-  triangleInv.setEnabled(false);
-  // log(triangle.position)
-
-
-  faces = [];
-  for (var f=0; f<5; f++){
-    face = [];
-    for (var i=0; i<4; i++){
-      var tri = triangle.createInstance();
-      tri.position.z += i*3;
-      tri.name = "tri";
-      face.push(tri);
-      if (i!=3){
-        var tri = triangleInv.createInstance();
-        tri.position.z += i*3;
-        tri.name = "tri";
-        face.push(tri);
-      }
-    }
-    for (var i=0; i<3; i++){
-      var tri = triangle.createInstance();
-      tri.position.z += i*3+1.5;
-      tri.position.y += 2.4;
-      tri.name = "tri";
-      face.push(tri);
-      if (i!=2){
-        var tri = triangleInv.createInstance();
-        tri.position.z += i*3+1.5;
-        tri.position.y += 2.4;
-        tri.name = "tri";
-        face.push(tri);
-
-      }
-    }
-    for (var i=0; i<2; i++){
-      var tri = triangle.createInstance();
-      tri.position.z += i*3+3;
-      tri.position.y += 4.8;
-      tri.name = "tri";
-      face.push(tri);
-      if (i!=1){
-        var tri = triangleInv.createInstance();
-        tri.position.z += i*3+3;
-        tri.position.y += 4.8;
-        tri.name = "tri";
-
-        face.push(tri);
-
-      }
-    }
-
-    var tri = triangle.createInstance();
-    tri.position.z += 4.5;
-    tri.position.y += 7.2;
-    tri.isVisible = false;
-    tri.metadata = {shield:true};
-    tri.name = "triFinal";
-    face.push(tri);
-
-
-
-    let die = new BABYLON.TransformNode();
-    for (i=0; i<face.length; i++){
-      // log(face[i])
-      face[i].parent = die;
-    }
-    die.rotation.z-=.92;
-    die.position.y-=9.4;
-    // die.rotation.y+=((2*Math.PI)/5)*f;
-    // die.position.x += 9;
-    die.rotate(BABYLON.Vector3.Up(), ((2*Math.PI)/5)*f, BABYLON.Space.WORLD);
-
-
-
-    faces.push(die);
-    // let die2 = new BABYLON.TransformNode();
-    // for (i=0; i<die.children.length; i++){
-  }
-
-
+  makeBoard();
+  
 
   boss = BABYLON.MeshBuilder.CreateSphere("boss", {diameter: 1.5, segments: 32}, scene);
 
@@ -487,7 +388,7 @@ function run(){
 }
 // 67 oct
 // 12 tri min
-// 57 motion
+// 57 TRI-AUG motions(56,64, 7, 14)
 // 61
 // 41
 // 43
@@ -615,13 +516,19 @@ function PBody(){
   this.acc = 0;
 
   this.vel = 0;
+
+  this.sImp = new Vec3();
+  this.sAcc = new Vec3();
+  this.sVel = new Vec3();
   
   this.state = {
+    s: new Vec3(),
     loc: new Vec3(),
     spin: 0,
     level: 0
   }
   this.prevState = {
+    s: new Vec3(),
     loc: new Vec3(),
     spin: 0,
     level:0
@@ -667,82 +574,3 @@ PBody.prototype.integrate = function(dt){
 }
 
 
-
-makePyramid = function(obj, scene) {
-  var loc = new Vec3(0,0,0);
-  var h = obj;
-  var name = "Pyramid";
-  name = "Wire_" + name;
-
-  var pyramidFaces = [
-    0, 1, 5,
-    1, 2, 5,
-    2, 3, 5,
-    3, 4, 5,
-    4, 0, 5
-    ,
-    0, 4, 3,
-    0, 3, 2,
-    0, 2, 1
-  ]
-  
-  var pyramid = new BABYLON.Mesh(name, scene);
-  var vertexData = new BABYLON.VertexData();
-
-  var pyramidVerts = [];//obj.verts;
-  for (var i=0; i<360; i+=72){
-      pyramidVerts.push(loc.x+h*Math.cos(i*Math.PI/180));
-      pyramidVerts.push(loc.y+0);
-      pyramidVerts.push(loc.z+h*Math.sin(i*Math.PI/180));
-  }
-
-  var sideLength = Math.sqrt(((pyramidVerts[3]-pyramidVerts[0])*(pyramidVerts[3]-pyramidVerts[0]))+(pyramidVerts[5]-pyramidVerts[2])*((pyramidVerts[5]-pyramidVerts[2])));
-  pyramidVerts.push(loc.x+0);
-  pyramidVerts.push(loc.y+Math.sqrt((5-Math.sqrt(5))/10)*sideLength);
-  pyramidVerts.push(loc.z+0);
-  
-  vertexData.positions = pyramidVerts;
-  vertexData.indices = pyramidFaces;
-  vertexData.normals = [];
-  BABYLON.VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
-  // return vertexData;  
-  
-  vertexData.applyToMesh(pyramid);
-  pyramid.setEnabled(false);
-  return pyramid;
-};
-
-
-let volume = 1;
-makeBoop = function(name, speed){
-  if (volume == 0) return;
-  if (!speed) speed = 1;
-  if (!BABYLON.Engine.audioEngine.unlocked) return;
-  
-
-  let file = ASS+name+".ogg";
-
-  var tBoop = new BABYLON.Sound(name, file, scene, null, {
-          // loop: true,
-    autoplay: true
-  });
-
-  tBoop.metadata = {
-    stackable: true,
-    volume: 1
-  };
-  
-  tBoop.setPlaybackRate(speed);
-  tBoop.setVolume(volume*.5);
-  tBoop.play()
-  // log(tBoop)
-  
-  if (!tBoop.isPlaying || tBoop.metadata?.stackable)
-    tBoop.play();
-}
-window.addEventListener('click', () => {
-  if(!BABYLON.Engine.audioEngine.unlocked) BABYLON.Engine.audioEngine.unlock();
-}, {once: true});
-window.addEventListener('keydown', () => {
-  if(!BABYLON.Engine.audioEngine.unlocked) BABYLON.Engine.audioEngine.unlock();
-}, {once: true});
