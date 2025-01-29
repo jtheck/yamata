@@ -97,9 +97,9 @@ function keyInput(e){
       keyState.boost = state;
     break;
     case 'KeyW':
+    case 'KeyE':
     case 'ArrowUp': 
-      // Playroom.myPlayer().setState("dir", 'boop');
-
+      keyState.in = state;
     break;
     case 'KeyA':
     case 'KeyS':
@@ -108,7 +108,6 @@ function keyInput(e){
     break;
     case 'ArrowDown':
       keyState.down = state;
-      // log(e)
     break;
     case 'KeyD':
     case 'KeyF':
@@ -120,29 +119,23 @@ function keyInput(e){
 
 }
 function procInput(){
-  
   let impulse = 1.5;
 
   if (keyState.left){
-    player.pb.imp -= impulse;
-
+    player.pb.sImp.x -= impulse;
   }
   if (keyState.right){
-    player.pb.imp += impulse;
-
+    player.pb.sImp.x += impulse;
   }
-
   if (keyState.boost){
-    player.pb.imp *= 2;
-
+    player.pb.sImp.x *= 2;
   }
-
   if (keyState.up){
-
-    player.node.position.y += .05;
+    player.pb.sImp.y += impulse*3;
   } 
-
-  
+  if (keyState.in){
+    player.pb.sImp.z -= impulse;
+  }
   // keyState = {
   //   left: false,
   //   right: false,
@@ -170,19 +163,16 @@ function makeScene(){
   scene.autoClear = false; // Preserve background
   // scene.clearColor = ColorHex("#ffffff");
   
-  makeCamera();
-
   // lights
   lightD = new BABYLON.DirectionalLight("DirectionalLight", new Vec3(-.5, -1, -1.25), scene);
   lightD.intensity = 0.6;
-
+  
   lightP = new BABYLON.PointLight("*PointLight0", new BABYLON.Vector3(0, -4, 0), scene);
   lightP.intensity = .88;
   // lightP.diffuse = new BABYLON.Color3(.9, .9, .9);
   // lightP.specular = new BABYLON.Color3(.9,.9,.9);
   // lightP.range = 25;
   // lightP.radius = 1;
-
   
   // Hemispheric Light (luna)
   var direction = new Vec3(2, .44, 3.67).negate(); // gfx.lunaPos
@@ -191,21 +181,17 @@ function makeScene(){
   // lightH.diffuse = new BABYLON.Color3(.8, 0.8, .9);
   // lightH.specular = new BABYLON.Color3(.7,.7,.63);
   // lightH.groundColor = new BABYLON.Color3(0, 0, 0);
+  
 
 
+  makeCamera();
 
-  ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 42, height: 42}, scene);
-  ground.position.y = -3;
-
-  mat = new BABYLON.StandardMaterial("matgrass", scene);
-  let file = ASS+"grass.jpg";
-  mat.emissiveTexture = new BABYLON.Texture(file, scene);
-  mat.ambientTexture = new BABYLON.Texture(file, scene);
-  mat.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
-  mat.specularColor = new BABYLON.Color3(.1, .3, .1);
-  ground.material = mat;
+  makeAtmo();
 
   makeBoard();
+
+  makeGUI();
+
   
 
   boss = BABYLON.MeshBuilder.CreateSphere("boss", {diameter: 1.5, segments: 32}, scene);
@@ -220,14 +206,13 @@ function makeScene(){
     player.node = null;
     player.node = rolley;
     player.node.scaling = new Vec3(.35,.35,.35);
-    player.node.position.y = -1;
+    player.node.position.y = -2;
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"frog.glb", scene).then(function (result) {
     // var range = 70
     // for(var i = 0; i<100; i++){
     //      var x = range / 2 - Math.random() * range;
     //      var z = range / 2 - Math.random() * range;
-    
             boss = result.meshes[0];//.createInstance()
             // boss.scaling = new Vec3(1.2,1.2,1.2)
             // boss.position = new Vec3(0,1,0);
@@ -235,6 +220,7 @@ function makeScene(){
     //   scene.getAnimationGroupByName("Run").start();
     // scene.getAnimationGroupByName("Run").loopAnimation = true;
   });
+
 
   // // Create & launch a particule system
   // var particleSystem = new BABYLON.ParticleSystem("spawnParticles", 3600, scene);    // 3600 particles to have a continue effect when computing circle positions
@@ -265,65 +251,7 @@ function makeScene(){
   // }
   // // Start
   // particleSystem.start();
-// 
-  var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-  var life = BABYLON.GUI.Button.CreateSimpleButton("Alive", "Alive");
-  life.width = 0.8; // 0.2 = 20%
-  life.height = "24px";
-  life.cornerRadius = 20;
-  life.color = "white";
-  life.thickness = 1;
-  life.background = "green";
-
-  life.top = "-46%"; //200 px
-  life.left = "1%";
-  life.onPointerClickObservable.add(() => {
-      // life.top = "-40%";
-      // life.left = -50;
-      // life.background = "red";
-      // log(life)
-      life.width = 0.4;
-  });
-  advancedTexture.addControl(life);
-
-
-  var life = BABYLON.GUI.Button.CreateSimpleButton("mute", "mute");
-  life.width = "46px"; // 0.2 = 20%
-  life.height = "46px";
-  life.cornerRadius = 20;
-  life.color = "white";
-  // life.thickness = 1;
-  // life.background = "green";
-
-  life.top = "30 px"; //200 px
-  life.left = "-45%";
-  life.onPointerClickObservable.add(() => {
-      // life.top = "-40%";
-      // life.left = -50;
-      // life.background = "red";
-      // log(life)
-      makeBoop('boing');
-  });
-  advancedTexture.addControl(life);
-  // 🔇
-  var life = BABYLON.GUI.Button.CreateSimpleButton("start", "start");
-  life.width = "46px"; // 0.2 = 20%
-  life.height = "46px";
-  life.cornerRadius = 20;
-  life.color = "white";
-  // life.thickness = 1;
-  // life.background = "green";
-
-  life.top = "-30px"; //200 px
-  life.left = "-45%";
-  life.onPointerClickObservable.add(() => {
-      scene.activeCamera = camera;
-      camera.setTarget(Vec3.Zero());
-      makeBoop('frog');
-
-  });
-  advancedTexture.addControl(life);
 
 }
 
@@ -455,24 +383,24 @@ for (var i=0; i<hit.length; i++){
 }
 
 function render(a, b){
-  let spin = player.pb.interpolate(a,b).spin;
-  // player.node.absolutePosition.x = 5*Math.cos(spin);
-  // player.node.absolutePosition.z = 5*Math.sin(spin);
+  let spin = player.pb.interpolate(a,b).x;
 
-  let pRad = 24;
+  let pRad = player.pb.state.spy.z;
 
   player.node.position.x = pRad*Math.cos(spin);
   player.node.position.z = pRad*Math.sin(spin);
+  
+  player.node.position.y = player.pb.state.spy.y;
 
   player.node.lookAt(new Vec3(0,0,0));
   
-  // if(player.pb.state.spin > 0.5)
-    if(player.pb.vel > 0.5)
+  // if(player.pb.state.spy.x > 0.5)
+    if(player.pb.sVel.x > 0.5)
       player.node.rotate(new Vec3(0,1,0),1.17);
 
     // player.node.lookAt(player.node.right.scale(10));
-  // if(player.pb.state.spin < -0.5)
-    if(player.pb.vel < -0.5)
+  // if(player.pb.state.spy.x < -0.5)
+    if(player.pb.sVel.x < -0.5)
       player.node.rotate(new Vec3(0,1,0),-1.17);
     // player.node.lookAt(player.node.right.negate());
 
@@ -482,8 +410,8 @@ function render(a, b){
 
   camera.position.x = cRad*Math.cos(spin);
   camera.position.z = cRad*Math.sin(spin);
-  camera.position.y = player.node.position.y  + Math.abs(player.node.position.y+1)*1.2
-  if (player.pb.vel !== 0) camera.setTarget(Vec3.Zero());
+  camera.position.y = player.node.position.y +1.2;//  + Math.abs(player.node.position.y+1)*1.2
+  if (player.pb.sVel.x !== 0) camera.setTarget(Vec3.Zero());
 
   scene.render();
 }
@@ -511,66 +439,99 @@ function PBody(){
   this.friction = -.04;
   this.rebound = 0;
 
-  this.imp = 0;
-  
-  this.acc = 0;
-
-  this.vel = 0;
+  // this.imp = 0;
+  // this.acc = 0;
+  // this.vel = 0;
 
   this.sImp = new Vec3();
   this.sAcc = new Vec3();
   this.sVel = new Vec3();
   
   this.state = {
-    s: new Vec3(),
-    loc: new Vec3(),
+    spy: new Vec3(),
+    // loc: new Vec3(),
     spin: 0,
     level: 0
   }
   this.prevState = {
-    s: new Vec3(),
-    loc: new Vec3(),
+    spy: new Vec3(),
+    // loc: new Vec3(),
     spin: 0,
     level:0
   }
 }
 PBody.prototype.interpolate = function(a, b){
   return {
-    spin: this.state.spin*a+this.prevState.spin*b
+    // spin: this.state.spy.x*a+this.prevstate.spy.x*b,
+    x: this.state.spy.x*a+this.prevState.spy.x*b
+
   }
 }
 PBody.prototype.integrate = function(dt){
   // save state
-  this.prevState.loc = this.state.loc.clone();
-  this.prevState.spin = this.state.spin;
+  // this.prevState.loc = this.state.loc.clone();
+  this.prevState.spy = this.state.spy.clone();
 
   // this.rebound *= .01;
   if (Math.abs(this.rebound) < 0.001)
     this.rebound = 0;
 
   let max = 1.4;
-  if (this.state.spin > max)
-    this.rebound += this.state.spin - max;
-  if (this.state.spin < -max)
-    this.rebound += this.state.spin + max;
+  if (this.state.spy.x > max)
+    this.rebound += this.state.spy.x - max;
+  if (this.state.spy.x < -max)
+    this.rebound += this.state.spy.x + max;
   
   this.rebound *= .16;
 
-  // imp -> acc
-  if (Math.abs(this.vel) < 3 && Math.abs(this.state.spin) < 2) this.imp *= .23; // slow interia
-  this.imp += this.vel * this.friction;
-  this.imp -= this.rebound;
-  this.acc = this.imp*this.mass;
-  if (this.state.loc.y > -1) this.acc.y -= 9.8*this.mass*dt;
 
-  this.imp=0;
+
+  // imp -> acc
+  if (Math.abs(this.sVel.x) < 3 && Math.abs(this.state.spy.x) < 2) this.sImp.x *= .23; // slow interia
+  this.sImp.x += this.sVel.x * this.friction;
+  this.sImp.x -= this.rebound;
+  this.sAcc.x = this.sImp.x*this.mass;
   
-  this.vel+=(this.acc*dt);
-  if (Math.abs(this.vel) < 0.001)
-    this.vel = 0;
-  this.state.spin += this.vel*dt;
+  this.sAcc.y = this.sImp.y*this.mass;
+  this.sAcc.y -= 3*9.8*this.mass*dt;
+  // if (this.state.spy.y > -1) {
+  // }
+  // else {
+  //   this.sAcc.y = 0;
+  //   // this.sVel.y = 0;
+  // }
+  this.sImp = new Vec3();
   
-  let ZEROVELOCITY = .01;
+
+
+
+  // acc -> vel
+  this.sVel.x+=(this.sAcc.x*dt);
+  if (Math.abs(this.sVel.x) < 0.001)
+    this.sVel.x = 0;
+
+
+  this.sVel.y += this.sAcc.y*dt;
+  // if (player.node.position.y < -1) {
+  //   this.state.loc.y = -1;
+  //   player.node.position.y = -1;
+  // }
+
+  // vel -> pos
+  this.state.spy.x += this.sVel.x*dt;
+
+  
+  this.state.spy.y += this.sVel.y*dt;
+  if (this.state.spy.y < -2) {
+    this.state.spy.y = -2;
+    this.sVel.y = 0;
+  }
+
+  // let ZEROVELOCITY = .01;
+
+
+  if (this.state.spy.z < 34)
+    this.state.spy.z ++;
 }
 
 
