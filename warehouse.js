@@ -6,31 +6,30 @@
 
 
 
-
 function makeGUI(){
   var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-  var life = BABYLON.GUI.Button.CreateSimpleButton("Alive", "Alive");
-  life.width = 0.8; // 0.2 = 20%
-  life.height = "24px";
-  life.cornerRadius = 20;
-  life.color = "white";
-  life.thickness = 1;
-  life.background = "green";
+  // life = BABYLON.GUI.Button.CreateSimpleButton("Alive", "Alive");
+  // life.width = 0.8; // 0.2 = 20%
+  // life.height = "24px";
+  // life.cornerRadius = 20;
+  // life.color = "white";
+  // life.thickness = 1;
+  // life.background = "green";
 
-  life.top = "-46%"; //200 px
-  life.left = "1%";
-  life.onPointerClickObservable.add(() => {
-      // life.top = "-40%";
-      // life.left = -50;
-      // life.background = "red";
-      // log(life)
-      life.width = 0.4;
-  });
-  advancedTexture.addControl(life);
+  // life.top = "-46%"; //200 px
+  // life.left = "1%";
+  // life.onPointerClickObservable.add(() => {
+  //     // life.top = "-40%";
+  //     // life.left = -50;
+  //     // life.background = "red";
+  //     // log(life)
+  //     // life.width = 0.4;
+  // });
+  // advancedTexture.addControl(life);
 
 
-  var life = BABYLON.GUI.Button.CreateSimpleButton("mute", "mute");
+   life = BABYLON.GUI.Button.CreateSimpleButton("mute", "mute");
   life.width = "46px"; // 0.2 = 20%
   life.height = "46px";
   life.cornerRadius = 20;
@@ -49,7 +48,7 @@ function makeGUI(){
   });
   advancedTexture.addControl(life);
   // 🔇
-  var life = BABYLON.GUI.Button.CreateSimpleButton("start", "start");
+   life = BABYLON.GUI.Button.CreateSimpleButton("start", "start");
   life.width = "46px"; // 0.2 = 20%
   life.height = "46px";
   life.cornerRadius = 20;
@@ -66,6 +65,27 @@ function makeGUI(){
 
   });
   advancedTexture.addControl(life);
+
+
+  life = BABYLON.GUI.Button.CreateSimpleButton("Alive", "Alive");
+  life.width = 0.8; // 0.2 = 20%
+  life.height = "24px";
+  life.cornerRadius = 20;
+  life.color = "white";
+  life.thickness = 1;
+  life.background = "green";
+
+  life.top = "-46%"; //200 px
+  life.left = "1%";
+  life.onPointerClickObservable.add(() => {
+      // life.top = "-40%";
+      // life.left = -50;
+      // life.background = "red";
+      // log(life)
+      // life.width = 0.4;
+  });
+  advancedTexture.addControl(life);
+
 }
 
 
@@ -73,7 +93,7 @@ function makeGUI(){
 
 function makeAtmo(){
 
-  ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 169, height: 169}, scene);
+  ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 223, height: 223}, scene);
   ground.position.y = -3;
 
   mat = new BABYLON.StandardMaterial("matgrass", scene);
@@ -91,6 +111,7 @@ function makeAtmo(){
 
   // grasses
   const plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 1 }, scene);
+  plane.isVisible = false;
   const material = new BABYLON.StandardMaterial("material", scene);
   material.diffuseTexture = new BABYLON.Texture(ASS+"blade.png", scene); 
   material.backFaceCulling = false; // Ensure the texture is visible from both sides
@@ -123,6 +144,7 @@ function makeAtmo(){
     tBush.position = new Vec3(r*Math.cos(p), 0+Math.random()*15, r*Math.sin(p));
     tBush.scaling = new Vec3(1,1,1).scale(2+Math.random()*5)
     tBush.rotation = new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI);
+    tBush.parent = rocks;
   }
   bush = MakePoly(J44);
   for (var i=0; i < 133; i++){
@@ -132,8 +154,8 @@ function makeAtmo(){
     tBush.position = new Vec3(r*Math.cos(p), -5+Math.random()*5, r*Math.sin(p));
     tBush.scaling = new Vec3(1,1,1).scale(1+Math.random()*2)
     tBush.rotation = new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI);
+    tBush.parent = bushes;
   }
-
 }
 
 
@@ -312,10 +334,16 @@ let SnubIcosidodecahedron = {
 function MakePoly(p){
   var mat = new BABYLON.StandardMaterial("mat1", scene);
   mat.alpha = 1.0;
-  mat.diffuseColor = new BABYLON.Color3(0.2, 1.0, 0.2);
-    
+  if (p==J43)
+    mat.diffuseColor = new BABYLON.Color3(0.2, 0.9, 0.2);
+  if (p==J44)
+    mat.diffuseColor = new BABYLON.Color3(0.52, 0.5, 0.5);
+        
   var polygon = createPolyhedron(p.name, p, 2, scene);
-  // polygon.convertToFlatShadedMesh();
+  //
+    if (p==J44)
+  polygon.convertToFlatShadedMesh();
+
   polygon.material = mat;
   polygon.position.x = 0;
   polygon.position.y = 11;
@@ -408,3 +436,4 @@ window.addEventListener('click', () => {
 window.addEventListener('keydown', () => {
   if(!BABYLON.Engine.audioEngine.unlocked) BABYLON.Engine.audioEngine.unlock();
 }, {once: true});
+
