@@ -8,8 +8,8 @@
 const 
 Vec3 = BABYLON.Vector3,
 ColorHex = BABYLON.Color3.FromHexString,
-
-ASS = '',//'assets/', // remove to deploy
+// ASS = 'assets/', // remove to deploy
+ASS = '',
 log = console.log
 ;
 
@@ -25,6 +25,8 @@ let keyState = {
   left: false,
   right: false,
   up: false,
+  boost: false,
+  in: false,
   down: false
 };
 let notice = false;
@@ -136,6 +138,8 @@ function procInput(){
   if (keyState.boost){
     player.pb.sImp.x *= 2;
     if (jumpStop>0)jumpStop--;
+    makeBoop('tom-wet');
+
   }
   if (keyState.up){
     let fl = 1.9;
@@ -178,6 +182,7 @@ function Missile(){
   this.pos;
   this.tar;
   this.dmg;
+  this.type;
 }
 
 
@@ -346,6 +351,19 @@ function run(){
     stepLag = 0;
 
     while (accumulatedTime >= timestep) {
+      if (game.over){
+        keyState = {
+          left: false,
+          right: false,
+          up: false,
+          boost: false,
+          in: false,
+          down: false
+        };
+        alert('Level '+game.level+'! '+departed+' departed isopods!');
+        game.over = false;
+      } 
+
       update(timestep, currentTime);
 
       accumulatedTime -= timestep;
@@ -435,24 +453,19 @@ game.level++;
 
         boss.move("enter");
         // makeBoop('boing');
+        if (boss.name=="Gamachan") makeBoop("frog");
 
+if (boss.name=="YamataNoOrochi") makeBoop("growl");
 
-
-        // if (boss.name=='YamataNoOrichi'){
-        //   for (var k=0;k<heads.length;k++) heads[k].isVisible = true;
-        // }else {
-        // }
         
         scene.meshes.forEach(t=>{if (t.name=='tri')t.isVisible=true});
 
-        // hit[i].pickedMesh.name == 'tri' && hit[i].pickedMesh.isVisible
       }
 
 
 
       boss.node.scaling= boss.node.scaling.scale(1.014);
     }
-    // boss.position.y += .02;
 
   }
 }
@@ -465,48 +478,57 @@ game.level++;
   // }
 
 
-  if (Math.abs(player.pb.sVel.x) < 8 ){
-    let t = Math.random() < .1;
-if (game.level >1){
+  if (Math.random() < .4){
+    let atk = new Missile();
+    atk.node = water.createInstance();
+    atk.type = 'water';
+    atk.pos = player.node.position.clone();
+    atk.tar = player.node.position;
+    atk.dmg = 2;
+    missiles.push(atk);
+    atk.node.position = atk.pos;
+    atk.node.position.addInPlace(new Vec3(0,9,0));
+    // atk.node.position = atk.pos;
+    atk.node.position.addInPlace(new Vec3(-.5+Math.random()*7,-.5+Math.random()*7,-.5+Math.random()*7));
 
-}
+  }
+
+  if (Math.abs(player.pb.sVel.x) < 9 ){
+
+    t = Math.random() < .23;
     if (t && game.level > 1){
       let atk = new Missile();
       atk.node = fire.createInstance();
+      atk.type = 'fire';
       atk.pos = player.node.position.clone();
       atk.tar = player.node.position;
       atk.dmg = 1;
       missiles.push(atk);
       atk.node.position = atk.pos;
-    }
-
-
-     t = Math.random() < .1;
-    if (t){
-      let atk = new Missile();
-      atk.node = water.createInstance();
-      atk.pos = player.node.position.clone();
-      atk.tar = player.node.position;
-      atk.dmg = 2;
-      missiles.push(atk);
-      atk.node.position = atk.pos;
-      atk.node.position.addInPlace(new Vec3(0,9,0));
-      // atk.node.position = atk.pos;
+      atk.node.position.addInPlace(new Vec3(-.5+Math.random()*11,-.5+Math.random()*5,-.5+Math.random()*11));
 
     }
+
+
 
 
     t = Math.random() < .1;
     if (t && game.level > 2){
-      let atk = new Missile();
-      atk.node = teeth.createInstance();
-      atk.pos = player.node.position.clone();
-      atk.tar = player.node.position;
-      atk.dmg = 3;
-      missiles.push(atk);
-      atk.node.position = atk.pos;
-      atk.node.position.addInPlace(new Vec3(0,9,0));
-      // atk.node.position = atk.pos;
+
+      for(var k=0;k<8;k++){
+
+        let atk = new Missile();
+        atk.node = teeth.createInstance();
+        atk.type = 'teeth';
+        atk.pos = player.node.position.clone();
+        atk.tar = player.node.position;
+        atk.dmg = 3;
+        missiles.push(atk);
+        atk.node.position = atk.pos;
+        atk.node.position.addInPlace(new Vec3(0,9,0));
+        atk.node.position.addInPlace(new Vec3(-.5+Math.random()*28,9+-.5+Math.random()*15,-.5+Math.random()*28));
+  
+      }
 
     }
 
@@ -516,7 +538,7 @@ if (game.level >1){
   
   for(var i = 0; i< missiles.length; i++){
     let t = missiles[i];
-    t.node.position.y-=.25; 
+    t.node.position.y-=.23; 
 
 
 
@@ -533,6 +555,13 @@ if (game.level >1){
         // log('opsa',Vec3.Distance(t.node.position, player.node.position))
         if (Vec3.Distance(t.node.position, player.node.position)<15){
           player.life-= t.dmg + game.level%3;
+          if (t.type=='fire'){
+            if (jumpStop>0)jumpStop--;
+          }
+          if (t.type=='water'){
+            // log('op')
+            // player.pb.sVel *= .3;
+          }
         }
 
       } 
@@ -580,7 +609,7 @@ Boss.prototype.move=function(move){
       // this.node._children[0].isVisible = true;
 
 
-    if (this.name=="YamataNoOrichi"){
+    if (this.name=="YamataNoOrochi"){
       for (var k=0;k<heads.length;k++) heads[k].isVisible = true;
 
     } else {
@@ -591,7 +620,7 @@ Boss.prototype.move=function(move){
 
     break;
     case 'exit':
-      if (this.name=="YamataNoOrichi"){
+      if (this.name=="YamataNoOrochi"){
         for (var k=0;k<heads.length;k++) heads[k].isVisible = false;
   
       } else {
@@ -612,8 +641,8 @@ Boss.prototype.move=function(move){
 let bossn = 0;
 let bosses = [
   new Boss({name:'Gamachan', life:30, file:'frog'}),
-  new Boss({name:'Sansan', life:45, file:'san'}),
-  new Boss({name:'YamataNoOrichi', life:69, file:'yamata'})
+  new Boss({name:'Sansan', life:44, file:'san'}),
+  new Boss({name:'YamataNoOrochi', life:64, file:'yamata'})
 ]
 boss = bosses[bossn];
 
@@ -663,10 +692,7 @@ function render(a, b){
 
   scene.render();
 
-  if (game.over){
-    alert('Level '+game.level+'! '+departed+' departed isopods!');
-    game.over = false;
-  } 
+
 
 }
 

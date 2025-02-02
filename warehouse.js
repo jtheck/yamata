@@ -59,7 +59,13 @@ function makeGUI(){
   life.top = "-30px"; //200 px
   life.left = "-45%";
   life.onPointerClickObservable.add(() => {
+
+    // scene.activeCamera = camera;
+    if (scene.activeCamera==camera){
+      scene.activeCamera = camera2;
+    } else {
       scene.activeCamera = camera;
+    }
       camera.setTarget(Vec3.Zero());
       makeBoop('frog');
 
@@ -161,7 +167,7 @@ function makeAtmo(){
   water = MakePoly(J43, true);
   water.scaling = water.scaling.scale(.3);
   fire = MakePoly(J44, true);
-  
+
   // water.position = player.node.position;
   // fire.position = player.node.position;
 // var f = fire.createInstance();
