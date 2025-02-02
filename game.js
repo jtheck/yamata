@@ -8,8 +8,8 @@
 const 
 Vec3 = BABYLON.Vector3,
 ColorHex = BABYLON.Color3.FromHexString,
-// ASS = 'assets/', // remove to deploy
-ASS = '',
+ASS = 'assets/', // remove to deploy
+// ASS = '',
 log = console.log
 ;
 
@@ -399,7 +399,8 @@ function womp(){
   scene.activeCamera = camera2;
   camera2.setTarget(player.node.position);
   camera2.radius = 11;
-  makeBoop("frog");
+  if (boss.name=="YamataNoOrochi") makeBoop("growl");
+    else makeBoop("frog");
 }
 
 let rayHelper = new BABYLON.RayHelper();
@@ -533,8 +534,9 @@ game.level++;
       atk.pos = new Vec3(0,11,0);
       atk.tar = player.node.position.clone();
       atk.tar.y = -6;
-
-      atk.dmg = .2;
+      atk.rotx = Math.random();
+      atk.roty = Math.random();
+      atk.dmg = .4;
       atk.spd = .1;
       missiles.push(atk);
       atk.node.position = atk.pos;
@@ -577,6 +579,11 @@ game.level++;
     if (t.type=='teeth'){
       t.node.position.y-=.2; 
       t.node.scaling = t.node.scaling.scale(1.02);
+    }
+    if (t.type=='fire'){
+      // t.node.rotation = t.node.rotation.add(t.rotx,t.rot,0);
+      // log(t.node.rotation)
+      // t.node.rotation.addInPlace(t.rotx,t.rot,0)
     }
 
     // log(t.node.position)
