@@ -19,6 +19,7 @@ let ground, player, players, boss;
 let life;
 let rolley;
 let bushes, rocks;
+let skybox;
 let keyState = {
   left: false,
   right: false,
@@ -234,7 +235,9 @@ rocks = new BABYLON.TransformNode();
     // bosses[1].node.isVisible = false;
     bosses[1].node._children[0].isVisible = false;
 
-    boss.scaling = new Vec3(-6,6,6)
+    bosses[1].node._children[0].scaling = new Vec3(-2,2,2)
+    bosses[1].node._children[0].position.addInPlace(new Vec3(0,2,0));
+
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"yamata.glb", scene).then(function (result) {
     bosses[2].node = result.meshes[0];//frog;
@@ -242,7 +245,7 @@ rocks = new BABYLON.TransformNode();
     bosses[2].node._children[0].isVisible = false;
 
     // bosses[2].node.isVisible = false;
-    boss.scaling = new Vec3(-6,6,6)
+    // boss.scaling = new Vec3(-6,6,6)
   });
 
   // // Create & launch a particule system
@@ -377,6 +380,8 @@ function update(dt, t){
 // log(hit)
 
 for (var i=0; i<hit.length; i++){
+  if (scene.activeCamera.name!='MainCamera') continue;
+
   if (hit[i].pickedMesh.name == 'Board'){
     // log(hit[i].pickedMesh.name)
     // player.pb.sImp.z += 55;
@@ -497,8 +502,9 @@ function render(a, b){
 
 
   if (scene.activeCamera.name=='MainCamera'){
-    bushes.rotation.y -= player.pb.sVel.x*.11*.09;
-    rocks.rotation.y -= player.pb.sVel.x*.11*.11;
+    skybox.rotation.y -= player.pb.sVel.x*.06*.14;
+    bushes.rotation.y -= player.pb.sVel.x*.1*.09;
+    rocks.rotation.y -= player.pb.sVel.x*.1*.11;
 
   }
 
@@ -507,7 +513,7 @@ function render(a, b){
   camera.position.x = cRad*Math.cos(spin);
   camera.position.z = cRad*Math.sin(spin);
   camera.position.y = player.node.position.y +0.7;//  + Math.abs(player.node.position.y+1)*1.2
-  if (player.pb.sVel.x !== 0) camera.setTarget(Vec3.Zero());
+  if (Math.abs(player.pb.sVel.x) > 0.01) camera.setTarget(Vec3.Zero());
 
   scene.render();
 }

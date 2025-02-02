@@ -67,6 +67,28 @@ function makeGUI(){
   advancedTexture.addControl(life);
 
 
+  life = BABYLON.GUI.Button.CreateSimpleButton("Not Departed", "Not Departed");
+  life.width = 0.3; // 0.2 = 20%
+  life.height = "21px";
+  life.cornerRadius = 20;
+  life.color = "white";
+  life.thickness = 1;
+  life.background = "green";
+
+  life.top = "44%"; //200 px
+  life.left = "24%";
+  life.onPointerClickObservable.add(() => {
+      // life.top = "-40%";
+      // life.left = -50;
+      // life.background = "red";
+      // log(life)
+      // life.width = 0.4;
+  });
+  advancedTexture.addControl(life);
+
+
+
+
   life = BABYLON.GUI.Button.CreateSimpleButton("Alive", "Alive");
   life.width = 0.8; // 0.2 = 20%
   life.height = "24px";
@@ -156,6 +178,18 @@ function makeAtmo(){
     tBush.rotation = new Vec3(Math.random()*2*Math.PI, Math.random()*2*Math.PI, Math.random()*2*Math.PI);
     tBush.parent = bushes;
   }
+
+
+  skybox = BABYLON.Mesh.CreateBox("skyBox", 1500.0, scene);
+  var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+  skyboxMaterial.backFaceCulling = false;
+  skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(ASS+"nebula", scene);
+  skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+  skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+  skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+  skyboxMaterial.disableLighting = true;
+  skybox.material = skyboxMaterial;
+
 }
 
 
