@@ -65,9 +65,11 @@ function makeGUI(){
       scene.activeCamera = camera2;
     } else {
       scene.activeCamera = camera;
+      makeText(boss.name);
     }
       camera.setTarget(Vec3.Zero());
       makeBoop('frog');
+
 
   });
   advancedTexture.addControl(life);
@@ -319,7 +321,32 @@ function makeBoard(){
 
 
 
+function makeText(text){
+  // Create GUI
+  const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+  const textBlock = new BABYLON.GUI.TextBlock();
+  textBlock.text = text;
+  textBlock.color = "white";
+  textBlock.fontSize = 24;
+  advancedTexture.addControl(textBlock);
 
+  // Function to fade out text
+  function fadeOutText(textElement, duration) {
+    let animation = new BABYLON.Animation("fadeOut", "alpha", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    let keys = [
+      { frame: 0, value: 1 },
+      { frame: duration, value: 0 }
+    ];
+    animation.setKeys(keys);
+    textElement.animations = [animation];
+    scene.beginAnimation(textElement, 0, duration, false, 1, () => {
+      textElement.isVisible = false;
+    });
+  }
+
+  // Start fade out after 2 seconds
+  timeout = setTimeout(() => fadeOutText(textBlock, 60), 2000);
+}
 
 
 

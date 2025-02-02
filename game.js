@@ -174,6 +174,8 @@ let game = {
 }
 
 
+let xBonk = 0;
+let yBonk = 0;
 
 
 let missiles=[];
@@ -197,11 +199,11 @@ function makeScene(){
   lightD = new BABYLON.DirectionalLight("DirectionalLight", new Vec3(-.5, -1, -1.25), scene);
   lightD.intensity = 0.6;
   
-  lightP = new BABYLON.PointLight("*PointLight0", new BABYLON.Vector3(0, -4, 0), scene);
-  lightP.intensity = .88;
-  // lightP.diffuse = new BABYLON.Color3(.9, .9, .9);
-  // lightP.specular = new BABYLON.Color3(.9,.9,.9);
-  // lightP.range = 25;
+  lightP = new BABYLON.PointLight("*PointLight0", new BABYLON.Vector3(0, 10, 0), scene);
+  lightP.intensity = .99;
+  lightP.diffuse = new BABYLON.Color3(.9, .9, .9);
+  lightP.specular = new BABYLON.Color3(.9,.9,.9);
+  lightP.range = 21;
   // lightP.radius = 1;
   
   // Hemispheric Light (luna)
@@ -245,20 +247,21 @@ rocks = new BABYLON.TransformNode();
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"frog.glb", scene).then(function (result) {
     bosses[0].node = result.meshes[0];//frog;
+    bosses[0].node.position.y += 1.4;
     bosses[0].main = bosses[0].node._children[0];
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"san.glb", scene).then(function (result) {
-    bosses[1].node = result.meshes[0];//frog;
+    bosses[1].node = result.meshes[0];//san;
     bosses[1].main = bosses[1].node._children[0];
     bosses[1].node._children[0].isVisible = false;
 
     bosses[1].node._children[0].scaling = new Vec3(1.1,1.1,1.1)
     bosses[1].node._children[0].position.addInPlace(new Vec3(0,2,0));
-
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"yamata.glb", scene).then(function (result) {
-    bosses[2].node = result.meshes[0];//frog;
+    bosses[2].node = result.meshes[0];//yamata;
     teeth = bosses[2].node._children[0];
+    teeth.renderingGroupId = 1;
 
     bosses[2].main = bosses[2].node._children[0];
     bosses[2].node._children[0].isVisible = false;
@@ -266,7 +269,6 @@ rocks = new BABYLON.TransformNode();
       heads.push(bosses[2].node._children[i]);
       bosses[2].node._children[i].isVisible = false;
     }
-    // boss.scaling = new Vec3(-6,6,6)
   });
 
 
@@ -360,7 +362,7 @@ function run(){
           in: false,
           down: false
         };
-        alert('Level '+game.level+'! '+departed+' departed isopods!');
+        alert('Level '+game.level+'! Only '+departed+' departed isopods!');
         game.over = false;
       } 
 
@@ -391,7 +393,14 @@ for (i=0; i<7; i++){
   blobs.push()
 }
 
-
+function womp(){
+  yBonk = (Math.random()>.5?-1:1)*2*Math.random()+.5;
+  boss.life -= Math.random()*5;
+  scene.activeCamera = camera2;
+  camera2.setTarget(player.node.position);
+  camera2.radius = 11;
+  makeBoop("frog");
+}
 
 let rayHelper = new BABYLON.RayHelper();
 function update(dt, t){
@@ -403,7 +412,20 @@ function update(dt, t){
   player.pb.integrate(1/dt);
   
   
+  if (yBonk !== 0){
+    camera2.alpha += yBonk;
+    // camera.rotation.y += yBonk;
+    if (Math.abs(camera2.alpha) > 8){
+      yBonk = 0;
+      camera2.alpha = 0;
 
+      scene.activeCamera = camera;
+      camera.setTarget(Vec3.Zero());
+camera2.setTarget(Vec3.Zero())
+camera2.radius = 55;
+
+    }
+  }
   
 
 
@@ -417,10 +439,16 @@ function update(dt, t){
   let hit = hitRay.intersectsMeshes(scene.meshes);
 // log(hit)
 
+if (jumpStop == 3 && player.pb.state.spyn.z < 20){
+ womp()
+ player.life++;
+  jumpStop = 1;
+}
+
 for (var i=0; i<hit.length; i++){
 
+  // log(hit[i].pickedMesh.name)
   if (hit[i].pickedMesh.name == 'Board'){
-    // log(hit[i].pickedMesh.name)
     // player.pb.sImp.z += 55;
     // player.pb.sVel = player.pb.sVel.negate();
     break;
@@ -453,9 +481,9 @@ game.level++;
 
         boss.move("enter");
         // makeBoop('boing');
-        if (boss.name=="Gamachan") makeBoop("frog");
-
-if (boss.name=="YamataNoOrochi") makeBoop("growl");
+        
+        if (boss.name=="YamataNoOrochi") makeBoop("growl");
+        else makeBoop("frog");
 
         
         scene.meshes.forEach(t=>{if (t.name=='tri')t.isVisible=true});
@@ -478,13 +506,15 @@ if (boss.name=="YamataNoOrochi") makeBoop("growl");
   // }
 
 
-  if (Math.random() < .4){
+  if (Math.random() < .3+(boss.name=="Gamachan"?.4:0)){
     let atk = new Missile();
     atk.node = water.createInstance();
     atk.type = 'water';
     atk.pos = player.node.position.clone();
-    atk.tar = player.node.position;
-    atk.dmg = 2;
+    atk.tar = player.node.position.clone();
+    atk.tar.y = -99;
+    atk.dmg = .02;
+    atk.spd = .05;
     missiles.push(atk);
     atk.node.position = atk.pos;
     atk.node.position.addInPlace(new Vec3(0,9,0));
@@ -493,40 +523,43 @@ if (boss.name=="YamataNoOrochi") makeBoop("growl");
 
   }
 
-  if (Math.abs(player.pb.sVel.x) < 9 ){
+  if (Math.abs(player.pb.sVel.x) < 8 ){
 
-    t = Math.random() < .23;
+    t = Math.random() < .01+(boss.name=="Sansan"?.1:0);
     if (t && game.level > 1){
       let atk = new Missile();
       atk.node = fire.createInstance();
       atk.type = 'fire';
-      atk.pos = player.node.position.clone();
-      atk.tar = player.node.position;
-      atk.dmg = 1;
+      atk.pos = new Vec3(0,11,0);
+      atk.tar = player.node.position.clone();
+      atk.tar.y = -6;
+
+      atk.dmg = .2;
+      atk.spd = .1;
       missiles.push(atk);
       atk.node.position = atk.pos;
-      atk.node.position.addInPlace(new Vec3(-.5+Math.random()*11,-.5+Math.random()*5,-.5+Math.random()*11));
+      // atk.node.position.addInPlace(new Vec3(-.5+Math.random()*11,-.5+Math.random()*5,-.5+Math.random()*11));
 
     }
 
 
-
-
-    t = Math.random() < .1;
+    t = Math.random() < .1+(boss.name=="YamataNoOrochi"?.3:0);
     if (t && game.level > 2){
 
       for(var k=0;k<8;k++){
 
         let atk = new Missile();
         atk.node = teeth.createInstance();
+        atk.node.lookAt(player.node.position.negate());
         atk.type = 'teeth';
-        atk.pos = player.node.position.clone();
-        atk.tar = player.node.position;
-        atk.dmg = 3;
+        atk.pos = new Vec3(0,0,0);
+        atk.tar = player.node.position.clone();
+        atk.tar.y = -2;
+
+        atk.dmg = .3;
+        atk.spd = .3;
         missiles.push(atk);
         atk.node.position = atk.pos;
-        atk.node.position.addInPlace(new Vec3(0,9,0));
-        atk.node.position.addInPlace(new Vec3(-.5+Math.random()*28,9+-.5+Math.random()*15,-.5+Math.random()*28));
   
       }
 
@@ -535,16 +568,19 @@ if (boss.name=="YamataNoOrochi") makeBoop("growl");
 
   }
 
-  
+  // player.life = 11;
   for(var i = 0; i< missiles.length; i++){
     let t = missiles[i];
-    t.node.position.y-=.23; 
-
-
-
+    
+    t.node.position = Vec3.Lerp(t.node.position, t.tar, t.spd*0.15);
+    
+    if (t.type=='teeth'){
+      t.node.position.y-=.2; 
+      t.node.scaling = t.node.scaling.scale(1.02);
+    }
 
     // log(t.node.position)
-    if (t.node.position.y < -10)
+    if (t.node.position.y < -4)
     {
       t.node.dispose();
       missiles.splice(i,1);
@@ -553,8 +589,8 @@ if (boss.name=="YamataNoOrochi") makeBoop("growl");
     
 
         // log('opsa',Vec3.Distance(t.node.position, player.node.position))
-        if (Vec3.Distance(t.node.position, player.node.position)<15){
-          player.life-= t.dmg + game.level%3;
+        if (Vec3.Distance(t.node.position, player.node.position)<11){
+          player.life-= (t.dmg + game.level*.1)*(Math.abs(player.pb.sVel.x < 30 ? 1 : 0));
           if (t.type=='fire'){
             if (jumpStop>0)jumpStop--;
           }
@@ -617,6 +653,7 @@ Boss.prototype.move=function(move){
       this.main.isVisible = true;
     }
 
+    makeText(this.name);
 
     break;
     case 'exit':
@@ -641,8 +678,8 @@ Boss.prototype.move=function(move){
 let bossn = 0;
 let bosses = [
   new Boss({name:'Gamachan', life:30, file:'frog'}),
-  new Boss({name:'Sansan', life:44, file:'san'}),
-  new Boss({name:'YamataNoOrochi', life:64, file:'yamata'})
+  new Boss({name:'Sansan', life:43, file:'san'}),
+  new Boss({name:'YamataNoOrochi', life:63, file:'yamata'})
 ]
 boss = bosses[bossn];
 
@@ -665,7 +702,7 @@ function render(a, b){
     life2.width = (player.life/player.maxLife)*.5;
   }
   
-  boss.node.lookAt(player.node.position)
+  // boss.node.lookAt(player.node.position)
   
 
   if(player.pb.sVel.x > 0.5)
