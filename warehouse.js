@@ -67,24 +67,24 @@ function makeGUI(){
   advancedTexture.addControl(life);
 
 
-  life = BABYLON.GUI.Button.CreateSimpleButton("Not Departed", "Not Departed");
-  life.width = 0.3; // 0.2 = 20%
-  life.height = "21px";
-  life.cornerRadius = 20;
-  life.color = "white";
-  life.thickness = 1;
-  life.background = "green";
+  life2 = BABYLON.GUI.Button.CreateSimpleButton("Not Departed", "Not Departed");
+  life2.width = 0.3; // 0.2 = 20%
+  life2.height = "21px";
+  life2.cornerRadius = 20;
+  life2.color = "white";
+  life2.thickness = 1;
+  life2.background = "green";
 
-  life.top = "44%"; //200 px
-  life.left = "24%";
-  life.onPointerClickObservable.add(() => {
+  life2.top = "44%"; //200 px
+  life2.left = "24%";
+  life2.onPointerClickObservable.add(() => {
       // life.top = "-40%";
       // life.left = -50;
       // life.background = "red";
       // log(life)
       // life.width = 0.4;
   });
-  advancedTexture.addControl(life);
+  advancedTexture.addControl(life2);
 
 
 
@@ -157,6 +157,18 @@ function makeAtmo(){
     instance.rotation.z = Math.random() * .3;//Math.PI;
   }
 
+
+  water = MakePoly(J43, true);
+  water.scaling = water.scaling.scale(.3);
+  fire = MakePoly(J44, true);
+  
+  // water.position = player.node.position;
+  // fire.position = player.node.position;
+// var f = fire.createInstance();
+// f.scaling - f.scaling.scale(33);
+
+// var w = water.createInstance();
+// w.scaling - w.scaling.scale(33);
 
   let bush = MakePoly(J43);
   for (var i=0; i < 133; i++){
@@ -365,13 +377,18 @@ let SnubIcosidodecahedron = {
     "edge":[[0,1],[1,2],[2,0],[2,3],[3,0],[3,4],[4,0],[4,5],[5,0],[1,6],[6,7],[7,1],[7,8],[8,1],[8,2],[8,9],[9,2],[3,10],[10,11],[11,3],[11,4],[4,12],[12,5],[12,13],[13,5],[13,14],[14,5],[6,14],[14,15],[15,6],[15,16],[16,6],[16,7],[16,17],[17,7],[8,18],[18,9],[18,19],[19,9],[19,20],[20,9],[10,20],[20,21],[21,10],[21,22],[22,10],[22,11],[22,23],[23,11],[12,24],[24,25],[25,12],[25,13],[13,26],[26,14],[26,15],[26,27],[27,15],[16,28],[28,17],[28,29],[29,17],[29,30],[30,17],[18,30],[30,31],[31,18],[31,19],[19,32],[32,20],[32,21],[32,33],[33,21],[22,34],[34,23],[34,35],[35,23],[35,24],[24,23],[35,36],[36,24],[36,25],[36,37],[37,25],[26,38],[38,27],[38,39],[39,27],[39,40],[40,27],[28,40],[40,41],[41,28],[41,29],[29,42],[42,30],[42,31],[42,43],[43,31],[32,44],[44,33],[44,45],[45,33],[45,46],[46,33],[34,46],[46,47],[47,34],[47,35],[36,48],[48,37],[48,49],[49,37],[49,38],[38,37],[49,39],[39,50],[50,40],[50,41],[50,51],[51,41],[42,52],[52,43],[52,53],[53,43],[53,44],[44,43],[53,45],[45,54],[54,46],[54,47],[54,55],[55,47],[48,55],[55,56],[56,48],[56,49],[50,57],[57,51],[57,58],[58,51],[58,52],[52,51],[58,53],[54,59],[59,55],[59,56],[59,57],[57,56],[59,58]],
     "face":[[0,1,2],[0,2,3],[0,3,4],[0,4,5],[1,6,7],[1,7,8],[1,8,2],[2,8,9],[3,10,11],[3,11,4],[4,12,5],[5,12,13],[5,13,14],[6,14,15],[6,15,16],[6,16,7],[7,16,17],[8,18,9],[9,18,19],[9,19,20],[10,20,21],[10,21,22],[10,22,11],[11,22,23],[12,24,25],[12,25,13],[13,26,14],[14,26,15],[15,26,27],[16,28,17],[17,28,29],[17,29,30],[18,30,31],[18,31,19],[19,32,20],[20,32,21],[21,32,33],[22,34,23],[23,34,35],[23,35,24],[24,35,36],[24,36,25],[25,36,37],[26,38,27],[27,38,39],[27,39,40],[28,40,41],[28,41,29],[29,42,30],[30,42,31],[31,42,43],[32,44,33],[33,44,45],[33,45,46],[34,46,47],[34,47,35],[36,48,37],[37,48,49],[37,49,38],[38,49,39],[39,50,40],[40,50,41],[41,50,51],[42,52,43],[43,52,53],[43,53,44],[44,53,45],[45,54,46],[46,54,47],[47,54,55],[48,55,56],[48,56,49],[50,57,51],[51,57,58],[51,58,52],[52,58,53],[54,59,55],[55,59,56],[56,59,57],[57,59,58],[0,5,14,6,1],[2,9,20,10,3],[4,11,23,24,12],[7,17,30,18,8],[13,25,37,38,26],[15,27,40,28,16],[19,31,43,44,32],[21,33,46,34,22],[29,41,51,52,42],[35,47,55,48,36],[39,49,56,57,50],[45,53,58,59,54]]};
     
-function MakePoly(p){
+function MakePoly(p, alt){
   var mat = new BABYLON.StandardMaterial("mat1", scene);
   mat.alpha = 1.0;
-  if (p==J43)
+  if (p==J43){
     mat.diffuseColor = new BABYLON.Color3(0.2, 0.9, 0.2);
-  if (p==J44)
+    if (alt) mat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.9);
+    if (alt) mat.alpha = 0.7;
+  }
+  if (p==J44){
     mat.diffuseColor = new BABYLON.Color3(0.52, 0.5, 0.5);
+    if (alt) mat.diffuseColor = new BABYLON.Color3(0.9, 0.2, 0.2);
+  }
         
   var polygon = createPolyhedron(p.name, p, 2, scene);
   //
@@ -436,32 +453,35 @@ makePyramid = function(obj, scene) {
   return pyramid;
 };
 
-
-let volume = 1;
+let sounds = new Map();
+let volume = .9;
 makeBoop = function(name, speed){
   if (volume == 0) return;
   if (!speed) speed = 1;
   if (!BABYLON.Engine.audioEngine.unlocked) return;
   
 
-  let file = ASS+name+".ogg";
-
-  var tBoop = new BABYLON.Sound(name, file, scene, null, {
-          // loop: true,
-    autoplay: true
-  });
+  
+  var tBoop = sounds.get(name);
+  if (!tBoop){
+    let file = ASS+name+".ogg";
+    tBoop = new BABYLON.Sound(name, file, scene, null, {
+        // loop: true,
+      autoplay: true
+    });
+    sounds.set(name, tBoop);
+  }
 
   tBoop.metadata = {
-    stackable: true,
-    volume: 1
+    stackable: false,
+    volume: .3
   };
+
   
   tBoop.setPlaybackRate(speed);
-  tBoop.setVolume(volume*.5);
-  tBoop.play()
-  // log(tBoop)
+  tBoop.setVolume(tBoop.metadata.volume*volume*.3);
   
-  if (!tBoop.isPlaying || tBoop.metadata?.stackable)
+  if (!tBoop.isPlaying || tBoop.metadata.stackable)
     tBoop.play();
 }
 window.addEventListener('click', () => {

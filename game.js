@@ -9,17 +9,18 @@ const
 Vec3 = BABYLON.Vector3,
 ColorHex = BABYLON.Color3.FromHexString,
 
-ASS = 'assets/', // remove to deploy
+ASS = '',//'assets/', // remove to deploy
 log = console.log
 ;
 
 let canvas, engine, scene, camera, lightD, lightP, lightH;
 let board;
 let ground, player, players, boss;
-let life;
+let life,life2;
 let rolley;
 let bushes, rocks;
 let skybox;
+let water, fire, teeth;
 let keyState = {
   left: false,
   right: false,
@@ -137,8 +138,11 @@ function procInput(){
     if (jumpStop>0)jumpStop--;
   }
   if (keyState.up){
-    // makeBoop('boing');
-    player.pb.sImp.y += impulse*2;
+    let fl = 1.9;
+    if (player.pb.state.spyn.y == -2+((fl*jumpStop)))
+      makeBoop('boing');
+
+    player.pb.sImp.y += impulse*3;
 
   } 
   if (keyState.in){
@@ -155,14 +159,26 @@ function procInput(){
 
 player = {
  pb: new PBody(),
- node: null
+ node: null,
+ life: 100,
+ maxLife: 100
+}
+let game = {
+  scores: [],
+  level: 1,
+  over: false
 }
 
 
 
 
-
-
+let missiles=[];
+function Missile(){
+  this.node;
+  this.pos;
+  this.tar;
+  this.dmg;
+}
 
 
 let mat;
@@ -207,6 +223,7 @@ rocks = new BABYLON.TransformNode();
   frog = BABYLON.MeshBuilder.CreateSphere("boss", {diameter: 1.5, segments: 32}, scene);
   frog.isVisible = false;
   boss.node = frog;
+  teeth = frog;
 
 
   player.node = BABYLON.MeshBuilder.CreateSphere("player", {diameter: .5, segments: 32}, scene);
@@ -224,63 +241,66 @@ rocks = new BABYLON.TransformNode();
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"frog.glb", scene).then(function (result) {
     bosses[0].node = result.meshes[0];//frog;
     bosses[0].main = bosses[0].node._children[0];
-    // bosses[0].node._children[0].isVisible = false;
-
-    // log(bosses[0].node)
-    // bosses[0].node._children[0].isVisible = false;
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"san.glb", scene).then(function (result) {
     bosses[1].node = result.meshes[0];//frog;
     bosses[1].main = bosses[1].node._children[0];
-    // bosses[1].node.isVisible = false;
     bosses[1].node._children[0].isVisible = false;
 
-    bosses[1].node._children[0].scaling = new Vec3(-2,2,2)
+    bosses[1].node._children[0].scaling = new Vec3(1.1,1.1,1.1)
     bosses[1].node._children[0].position.addInPlace(new Vec3(0,2,0));
 
   });
   BABYLON.SceneLoader.ImportMeshAsync(null, '', ASS+"yamata.glb", scene).then(function (result) {
     bosses[2].node = result.meshes[0];//frog;
+    teeth = bosses[2].node._children[0];
+
     bosses[2].main = bosses[2].node._children[0];
     bosses[2].node._children[0].isVisible = false;
-
-    // bosses[2].node.isVisible = false;
+    for (var i=1; i < 9; i++){
+      heads.push(bosses[2].node._children[i]);
+      bosses[2].node._children[i].isVisible = false;
+    }
     // boss.scaling = new Vec3(-6,6,6)
   });
 
-  // // Create & launch a particule system
-  // var particleSystem = new BABYLON.ParticleSystem("spawnParticles", 3600, scene);    // 3600 particles to have a continue effect when computing circle positions
-  // particleSystem.particleTexture = new BABYLON.Texture("assets/particles/flare.png", scene);
-  // particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, .25);
-  // particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, .25);
-  // particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
-  // particleSystem.emitter = new BABYLON.Vector3(0, 0, 0);//.add(tr.self.frame);
-  // particleSystem.minSize = 0.1;
-  // particleSystem.maxSize = 0.5;
-  // particleSystem.emitRate = 500;
-  // particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;     // to manage alpha
-  // //  particleSystem.gravity = new BABYLON.Vector3(0, 3, 0);
-  // //particleSystem.direction1 = new BABYLON.Vector3(-1, 1, -1);
-  // //particleSystem.direction2 = new BABYLON.Vector3(1, 1, 1);
-  // particleSystem.minEmitPower = 5;
-  // particleSystem.maxEmitPower = 50;
-  // //particleSystem.updateSpeed = 0.1;
-  // particleSystem.cpt = 0; // Number of particles
-  // // Custom function to get the circle effect
-  // particleSystem.startPositionFunction = function(worldMatrix, positionToUpdate)
-  // {
-  //     var randX = -Math.sin(this.cpt * Math.PI/180);
-  //     var randY = this.minEmitBox.y+1.5;
-  //     var randZ = Math.cos(this.cpt * Math.PI/180);
-  //     BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-  //     this.cpt++;
-  // }
-  // // Start
-  // particleSystem.start();
+
+  // Create & launch a particule system
+  var particleSystem = new BABYLON.ParticleSystem("spawnParticles", 3600, scene);    // 3600 particles to have a continue effect when computing circle positions
+  particleSystem.particleTexture = new BABYLON.Texture(ASS+"blade.png", scene);
+  particleSystem.color1 = new BABYLON.Color4(0.7, 0.8, 1.0, .25);
+  particleSystem.color2 = new BABYLON.Color4(0.2, 0.5, 1.0, .25);
+  particleSystem.colorDead = new BABYLON.Color4(0, 0, 0.2, 0.0);
+  particleSystem.emitter = new BABYLON.Vector3(0, 0, 0);//.add(tr.self.frame);
+  particleSystem.minSize = 0.1;
+  particleSystem.maxSize = 0.5;
+  particleSystem.emitRate = 500;
+  particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ONEONE;     // to manage alpha
+  //  particleSystem.gravity = new BABYLON.Vector3(0, 3, 0);
+  //particleSystem.direction1 = new BABYLON.Vector3(-1, 1, -1);
+  //particleSystem.direction2 = new BABYLON.Vector3(1, 1, 1);
+  particleSystem.minEmitPower = 5;
+  particleSystem.maxEmitPower = 50;
+  //particleSystem.updateSpeed = 0.1;
+  particleSystem.cpt = 0; // Number of particles
+  // Custom function to get the circle effect
+  particleSystem.startPositionFunction = function(worldMatrix, positionToUpdate)
+  {
+    var r=3.5;
+      var randX = r*-Math.sin(this.cpt * Math.PI/180);
+      var randY = this.minEmitBox.y+1.5;
+      var randZ = r*Math.cos(this.cpt * Math.PI/180);
+      BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+      this.cpt++;
+  }
+  // Start
+  particleSystem.start();
+
+  
 
 
 }
-
+let heads = [];
 
 function makeCamera(){
   camera = new BABYLON.UniversalCamera("MainCamera", new BABYLON.Vector3(0, 3, 0), scene);
@@ -380,7 +400,6 @@ function update(dt, t){
 // log(hit)
 
 for (var i=0; i<hit.length; i++){
-  if (scene.activeCamera.name!='MainCamera') continue;
 
   if (hit[i].pickedMesh.name == 'Board'){
     // log(hit[i].pickedMesh.name)
@@ -394,6 +413,11 @@ for (var i=0; i<hit.length; i++){
   }
 
   if (hit[i].pickedMesh.name == 'tri' && hit[i].pickedMesh.isVisible){
+
+    makeBoop('boom');
+    if (scene.activeCamera.name!='MainCamera') continue;
+
+
     if (player.pb.sImp.z >= 0){
 
       hit[i].pickedMesh.isVisible = false;
@@ -401,23 +425,32 @@ for (var i=0; i<hit.length; i++){
 
       boss.life --;
       if (boss.life <= 0){
-        
+game.level++;        
         boss.move("exit");
+        boss.node.scaling= boss.node.scaling.scale(.90);
+
+        
         bossn < 2 ? bossn++ : bossn=0;
         boss = bosses[bossn];
+
         boss.move("enter");
         // makeBoop('boing');
 
 
 
-
+        // if (boss.name=='YamataNoOrichi'){
+        //   for (var k=0;k<heads.length;k++) heads[k].isVisible = true;
+        // }else {
+        // }
+        
         scene.meshes.forEach(t=>{if (t.name=='tri')t.isVisible=true});
-
 
         // hit[i].pickedMesh.name == 'tri' && hit[i].pickedMesh.isVisible
       }
 
-      boss.node.scaling= boss.node.scaling.scale(1.019);
+
+
+      boss.node.scaling= boss.node.scaling.scale(1.014);
     }
     // boss.position.y += .02;
 
@@ -430,9 +463,104 @@ for (var i=0; i<hit.length; i++){
   //   else
   //   log(hit[0].pickedMesh.name)
   // }
+
+
+  if (Math.abs(player.pb.sVel.x) < 8 ){
+    let t = Math.random() < .1;
+if (game.level >1){
+
+}
+    if (t && game.level > 1){
+      let atk = new Missile();
+      atk.node = fire.createInstance();
+      atk.pos = player.node.position.clone();
+      atk.tar = player.node.position;
+      atk.dmg = 1;
+      missiles.push(atk);
+      atk.node.position = atk.pos;
+    }
+
+
+     t = Math.random() < .1;
+    if (t){
+      let atk = new Missile();
+      atk.node = water.createInstance();
+      atk.pos = player.node.position.clone();
+      atk.tar = player.node.position;
+      atk.dmg = 2;
+      missiles.push(atk);
+      atk.node.position = atk.pos;
+      atk.node.position.addInPlace(new Vec3(0,9,0));
+      // atk.node.position = atk.pos;
+
+    }
+
+
+    t = Math.random() < .1;
+    if (t && game.level > 2){
+      let atk = new Missile();
+      atk.node = teeth.createInstance();
+      atk.pos = player.node.position.clone();
+      atk.tar = player.node.position;
+      atk.dmg = 3;
+      missiles.push(atk);
+      atk.node.position = atk.pos;
+      atk.node.position.addInPlace(new Vec3(0,9,0));
+      // atk.node.position = atk.pos;
+
+    }
+
+
+  }
+
+  
+  for(var i = 0; i< missiles.length; i++){
+    let t = missiles[i];
+    t.node.position.y-=.25; 
+
+
+
+
+    // log(t.node.position)
+    if (t.node.position.y < -10)
+    {
+      t.node.dispose();
+      missiles.splice(i,1);
+      i--
+      if (scene.activeCamera.name=='MainCamera'){
+    
+
+        // log('opsa',Vec3.Distance(t.node.position, player.node.position))
+        if (Vec3.Distance(t.node.position, player.node.position)<15){
+          player.life-= t.dmg + game.level%3;
+        }
+
+      } 
+      continue;
+
+
+    }
+
+
+
+
+
+
+
+  }
+
+  if (player.life <=0){
+    departed++;
+    scene.activeCamera = camera2;
+    player.life = 100;
+    game.over = true;
+    // game over
+  }
+
+
 }
 
-
+let departed = 0;
 
 
 function Boss(ops){
@@ -451,10 +579,26 @@ Boss.prototype.move=function(move){
     case 'enter':
       // this.node._children[0].isVisible = true;
 
+
+    if (this.name=="YamataNoOrichi"){
+      for (var k=0;k<heads.length;k++) heads[k].isVisible = true;
+
+    } else {
+
       this.main.isVisible = true;
+    }
+
+
     break;
     case 'exit':
-      this.main.isVisible = false;
+      if (this.name=="YamataNoOrichi"){
+        for (var k=0;k<heads.length;k++) heads[k].isVisible = false;
+  
+      } else {
+  
+        this.main.isVisible = false;
+      }
+  
 
       this.life = this.maxLife;
       // this.node._children[0].isVisible = false;
@@ -488,8 +632,10 @@ function render(a, b){
 
 
   if (life) {
-    life.width = boss.life/boss.maxLife;
+    life.width = boss.life/boss.maxLife*.9;
+    life2.width = (player.life/player.maxLife)*.5;
   }
+  
   boss.node.lookAt(player.node.position)
   
 
@@ -516,6 +662,12 @@ function render(a, b){
   if (Math.abs(player.pb.sVel.x) > 0.01) camera.setTarget(Vec3.Zero());
 
   scene.render();
+
+  if (game.over){
+    alert('Level '+game.level+'! '+departed+' departed isopods!');
+    game.over = false;
+  } 
+
 }
 
 
@@ -591,7 +743,7 @@ PBody.prototype.integrate = function(dt){
   this.sAcc.x = this.sImp.x*this.mass;
   
   this.sAcc.y = this.sImp.y*this.mass;
-  this.sAcc.y -= 4*9.8*this.mass*dt;
+  this.sAcc.y -= 5*9.8*this.mass*dt;
 
   if (player.pb.state.spyn.z < 14){
     player.pb.sImp.z += 55;
